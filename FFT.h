@@ -1,5 +1,7 @@
 //
-// Created by ttronrud on 2022-06-10.
+// Original: https://github.com/RussellHaley/FFT-C by Russell Haley
+// With contributions from rshuston
+// Added to SFMath library by ttronrud
 //
 
 #ifndef SFMATH_FFT_H
@@ -20,7 +22,7 @@ typedef enum fft_dir {
     FFT_INVERSE     /* kernel uses "+1" sign */
 } fft_dir;
 
-
+unsigned log2_u(unsigned v);
 /* In-place FFT */
 void ffti_f(complex_f data[], unsigned log2_N, fft_dir direction);
 
