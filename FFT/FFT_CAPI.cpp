@@ -2,6 +2,7 @@
 // Created by ttronrud on 2022-06-10.
 //
 
+#include "../SFMathCAPI.h"
 #include "FFT_CAPI.h"
 #include "FFT.h"
 #include <iostream>
@@ -26,8 +27,9 @@
  * The returned spectra will have an index->frequency mapping based on the output length, L. The mapping is:
  * (index/L) Hz.
  */
+extern "C" {
 
-extern "C" __declspec(dllexport) void __stdcall FFT_PredictN(unsigned int data_len, int *out_data_len)
+SFMATH_EXPORT void __stdcall FFT_PredictN(unsigned int data_len, int *out_data_len)
 {
     if (out_data_len == NULL)
         return;
@@ -36,7 +38,7 @@ extern "C" __declspec(dllexport) void __stdcall FFT_PredictN(unsigned int data_l
     *out_data_len = N;
 }
 
-extern "C" __declspec(dllexport) void __stdcall FFT_PSD(float *data, unsigned int data_len, bool use_hanning, float *out_data, int*out_data_len)
+SFMATH_EXPORT void __stdcall FFT_PSD(float *data, unsigned int data_len, bool use_hanning, float *out_data, int*out_data_len)
 {
     if(out_data == NULL)
         return;
@@ -66,7 +68,7 @@ extern "C" __declspec(dllexport) void __stdcall FFT_PSD(float *data, unsigned in
     free(cdata); //free our complex data, now that we're done with it
 }
 
-extern "C" __declspec(dllexport) void __stdcall FFT_Spectrum(float *data_re, float *data_im, unsigned int data_len, bool use_hanning, float *out_data_re, float *out_data_im, int *out_len)
+SFMATH_EXPORT void __stdcall FFT_Spectrum(float *data_re, float *data_im, unsigned int data_len, bool use_hanning, float *out_data_re, float *out_data_im, int *out_len)
 {
     if(out_data_im == NULL || out_data_re == NULL)
         return; //can't add to null pointers
@@ -118,4 +120,5 @@ extern "C" __declspec(dllexport) void __stdcall FFT_Spectrum(float *data_re, flo
     *out_len = N;
 
     free(cdata);
+}
 }

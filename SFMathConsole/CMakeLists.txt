@@ -1,4 +1,4 @@
-add_executable(SFMathConsole SFMathConsole.cpp)
+add_executable(SFMathConsole SFMathConsole.cpp SFMathConsole.h)
 target_link_libraries(SFMathConsole SFMath)
 add_custom_command(TARGET SFMathConsole POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy
