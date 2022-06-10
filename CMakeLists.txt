@@ -3,7 +3,9 @@ project(SFMath)
 
 set(CMAKE_CXX_STANDARD 14)
 
+add_subdirectory(FFT)
+
 add_subdirectory(SFMathConsole)
 
-add_library(SFMath SHARED SFMathCAPI.cpp SFMathCAPI.h FFT.cpp FFT.h complex.cpp complex.h SFMathConsole/SFMathConsole.cpp SFMathConsole/SFMathConsole.h)
+add_library(SFMath SHARED SFMathCAPI.cpp SFMathCAPI.h FFT/FFT.cpp FFT/FFT.h FFT/complex.cpp FFT/complex.h FFT/FFT_CAPI.cpp FFT/FFT_CAPI.h)
 

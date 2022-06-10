@@ -1,11 +1,12 @@
 //
 // Created by ttronrud on 2022-06-10.
+// THIS IS A TESTING PROGRAM - It depends on the SFMath methods
 //
 
 #include <cstdlib>
 #include <cstdio>
 #include "SFMathConsole.h"
-#include "../SFMathCAPI.h"
+#include "../FFT/FFT_CAPI.h"
 #include <iostream>
 
 int main(int argc, char * argv[])
@@ -15,7 +16,7 @@ int main(int argc, char * argv[])
     float T = 11.1111;
     float total_t = 256.0; //seconds of "total elapsed time"
     int L = 256; //how many samples for data
-    float zeroval = 1.25;
+    float zeroval = 0;
 
     float *initialX = (float*)malloc(L*sizeof (float));
     float* initialY = (float*)malloc(L*sizeof(float));
@@ -29,7 +30,7 @@ int main(int argc, char * argv[])
     float* out_spec = (float *)malloc(L*sizeof(float));
     int out_len = 0;
 
-    FFTSpectrum(initialY,(unsigned)L,true,out_spec,&out_len);
+    FFT_PSD(initialY,(unsigned)L,true,out_spec,&out_len);
 
     std::cout << out_spec << std::endl;
     std::cout << out_len << std::endl;

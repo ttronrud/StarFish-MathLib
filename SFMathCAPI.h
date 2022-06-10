@@ -5,11 +5,9 @@
 #ifndef SFMATH_SFMATHCAPI_H
 #define SFMATH_SFMATHCAPI_H
 
+//Here is an example, to demonstrate how to define the CAPI for access from the DLL
 extern "C" {
-    __declspec(dllexport) void __stdcall Hello();
-    //~~~~~FFT Methods~~~~~//
-    __declspec(dllexport) void __stdcall FFTSpectrum(float *data, unsigned int data_len, bool use_hanning, float *out_data, int*out_data_len);
-    __declspec(dllexport) void __stdcall FFT(float *data_re, float *data_im, unsigned int data_len, bool use_hanning, float *out_data_re, float *out_data_im, int *out_len);
+    __declspec(dllexport) void __stdcall SFMath_Hello(); //Our text exposed method to print to console
 };
 
 

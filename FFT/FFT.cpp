@@ -4,11 +4,10 @@
 // Added to SFMath library by ttronrud
 //
 
-#include "fft.h"
+#include "FFT.h"
 
-#include <math.h>
+#include <cmath>
 
-#include <stdio.h>
 #include <stdlib.h>
 
 /*

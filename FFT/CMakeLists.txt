@@ -1,0 +1,1 @@
+add_library(SFMath_FFT SHARED FFT_CAPI.cpp  FFT_CAPI.h FFT.cpp FFT.h complex.cpp complex.h)
