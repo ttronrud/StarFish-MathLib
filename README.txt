@@ -1,1 +1,2 @@
 The beginning of a multi-purpose StarFish math library that we can use as a heavily-documented, efficient, fast, non-SOUP-y plugin. The main goal will be to write the library in C++, generate a C DLL, and provide a C# interface file that can be added to any DotNet project to expose the math functions to the higher-level program.
+TEST
