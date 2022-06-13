@@ -12,7 +12,7 @@
 int main(int argc, char * argv[])
 {
     //SFMath_Hello();
-    //TestFFT();
+    TestFFT();
     TestCSpline();
 }
 
@@ -75,10 +75,12 @@ void TestCSpline()
 
 void TestFFT()
 {
+    printf("Testing FFT functionality. Producing sine wave with T=0.09 Hz for t=256s @ 2 sample/s\nPeak should be at ~0.09 Hz bin\n");
     //This choice of period means the PSD peak will be at 0.09Hz!
     float T = 11.1111;
     float total_t = 256.0; //seconds of "total elapsed time"
-    int L = 256; //how many samples for data
+    int L = 512; //how many samples for data
+    float Hz_Max = (1.0*L)/total_t; //max sample rate, which determines max output freq
     float zeroval = 0;
 
     float *initialX = (float*)malloc(L*sizeof (float));
@@ -93,9 +95,17 @@ void TestFFT()
     int out_len = 0;
 
     FFT_PSD(initialY,(unsigned)L,true,out_spec,&out_len);
-
+    int max_b = 0;
+    float max_val = 0;
     for(int i = 0; i < out_len/2; i++)
     {
-        printf("%.2f %.2f\n",(1.0*i)/(1.0*out_len),out_spec[i]);
+        if(i > 2 && out_spec[i] > max_val)
+        {
+            max_val = out_spec[i];
+            max_b = i;
+        }
+        //printf("%.2f %.2f\n",Hz_Max*(1.0*i)/(1.0*out_len),out_spec[i]);
     }
+    printf("Peak at %.2f, with amplitude %.2f\n",Hz_Max*(1.0*max_b)/(1.0*out_len),max_val);
+    printf("\n\n");
 }

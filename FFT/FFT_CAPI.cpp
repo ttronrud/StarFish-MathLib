@@ -20,6 +20,10 @@
  *            the heavy-lifting methods. *This might be useful for pre-allocation in the caller libraries!*
  * FFTSpectrum ~ take real floating-point data as input, perform an FFT, and calculate the spectral power array
  *               to return by reference, through pre-assigned arrays.
+ *               The returned spectrum has frequency values for each bin defined by the sampling rate of the input
+ *               data -- e.g. total time of 256s, with 512 samples, gives a freq of 2 Hz to out_len.
+ *               This means the bin->freq mapping for bin i, calculated on data with # samples N over time T is:
+ *                          freq(i) = N/T * i/out_len (Hz)
  * FFT ~ take arrays of real and imaginary components, perform an FFT, and write the real and imaginary spectral
  *       components to pre-allocated arrays
  *
