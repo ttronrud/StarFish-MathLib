@@ -1,0 +1,1 @@
+add_library(SFMath_CSpline SHARED CubicSpline.cpp CubicSpline.h CubicSpline_CAPI.cpp CubicSpline_CAPI.h)

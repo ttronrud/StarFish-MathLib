@@ -4,6 +4,17 @@ The beginning of a multi-purpose StarFish math library that we can use as a heav
 The main goal will be to write the library in C++, generate a C DLL, and provide a C# interface file that can be added to any DotNet
 project to expose the math functions to the higher-level program.
 
+Usage: This library will compile into both a dynamic SFMath.dll library and a static SFMath_STAT.lib library, for
+       use in projects of any type. Each module will also compile into its own dynamic library, for specific uses
+       that don't require the entire library. These individual libraries are inside [method]/SFMath_[method].dll.
+
+       To use these methods as an unmanaged dynamic library in a C++ program, one should use:
+       extern "C" __declspec(dllimport) void __stdcall SFMath_Hello();
+       in a header file, which will point the linker to a DLL library.
+
+       To use the static library, you need to make sure to link SFMath_STAT.lib, and include the appropriate header
+       files.
+
 How to contribute:
 1. Implement the methods that you want to include in a self-contained manner, as new cpp/h files, ideally named by
 the method (e.g. FFT.cpp/h), in a new folder named [method].
