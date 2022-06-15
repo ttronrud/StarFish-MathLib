@@ -18,19 +18,27 @@ int main(int argc, char * argv[])
     //ComboCSplineFFTTest();
     RRPracticeTest();
 }
+//Shows an example of reading in a list of R-R intervals
 void RRPracticeTest()
 {
     FILE *file;
     file = fopen("RRs.txt", "r");
     char buffer[16];
-    int st = 1500;
-    int N = 2000;
+    int st = 50000;
+    float recording_time = 128; //seconds
+    int alloc_size = 250;
+    int N = 0;
     int i = 0;
-    float *RRs = (float*)malloc(N*sizeof(float));
-    float *T = (float *)malloc(N*sizeof(float));
+    //malloc because I'm a C boi
+    float *RRs = (float*)malloc(alloc_size*sizeof(float));
+    float *T = (float *)malloc(alloc_size*sizeof(float));
     float t = 0;
     int _reali = 0;
-    while(fgets(buffer,16,file)!=NULL && i < N)
+    //Read through the RR list,
+    //cumulative time T is our x-axis for spline fitting
+    //we're pretending there's a recording "time" limit,
+    //which we check in our loop
+    while(fgets(buffer,16,file)!=NULL && t < recording_time)
     {
         if(_reali < st)
         {
@@ -42,33 +50,64 @@ void RRPracticeTest()
         T[i] = t;
         i++;
     }
-    std::cout << _reali + i << std::endl;
+    N = i; //The number of intervals
 
-    //now, spline fit
-    int L = t; //1 sample per second, so 1Hz max
+    //now, spline fit//
+    //We'll resample at 1Hz
+    int L = t;
+    //And our PSD window will be 64 second chunks
+    int window_size = 64;
+    //How many windows we'll use
+    int n_wind = L/window_size;
+    //and allocate the spline X and Y arrays
     float *splX = (float *)malloc(L*sizeof(float));
     float *splY = (float *)malloc(L*sizeof(float));
+    //Now, we add our evenly-spaced spline X points
+    //and we'll just zero our spline Y, so that no weird shit happens
     for(i = 0; i < L; i++)
     {
         splX[i] = i*t/L; //how much of the total time
         splY[i] = 0; //just zero this array
     }
+    //Run our spline interpolation!
     CSpline_Interp(T, RRs, (unsigned int)N, splX, splY, (unsigned int)L);
-    //t/L is our sampling frequency
-    //so (t/L)/
-    float* out_spec = (float *)malloc(L*sizeof(float));
+    //Now, the output spectrum, and the total spectrum
+    //we only care up to 0.4 (not even 0.5Hz), so we'll just save window_size/2 for total spec
+    float* out_spec = (float *)malloc(window_size*sizeof(float));
+    float* tot_spec = (float *)malloc((window_size/2)*sizeof(float));
+    //zero this array
+    for(int m = 0; m < window_size/2; m++)
+    {
+        tot_spec[m] = 0;
+    }
+    //Create a new array for the subsample of the spline in the window
+    float* spl_samp = (float *)malloc(window_size*sizeof(float));
     int out_len = 0;
-
-    FFT_PSD(splY,(unsigned)L,true,out_spec,&out_len);
+    //iterate over windows
+    for(int w = 0; w < n_wind; w++)
+    {
+        //construct spline subsample in the window
+        for(int j = 0; j < window_size; j++)
+        {
+            spl_samp[j] = splY[w*window_size + j];
+        }
+        //Get the PSD from this subsample
+        FFT_PSD(spl_samp,(unsigned)window_size,true,out_spec,&out_len);
+        //and add it to the total spectrum
+        for(int j = 0; j < out_len/2; j++)
+        {
+            tot_spec[j] += out_spec[j]/(1.0*n_wind); //Average all windows for the total
+        }
+    }
 
     std::cout << out_len << std::endl;
     std::cout << "total t = " << t << std::endl;
     std::cout << "#bins/total t = Hz = " << (L/t) << std::endl;
 
     float Hz_Max = (1.0*L)/(t); //max output frequency
-    for(int i = 0; i < out_len/2; i++)
+    for(int i = 0; i < window_size/2; i++)
     {
-        printf("[%.5f, %.5f],\n",Hz_Max*(1.0*i)/(1.0*out_len),out_spec[i]);
+        printf("[%.5f, %.5f],\n",Hz_Max*(1.0*i)/(1.0*window_size),tot_spec[i]);
     }
 
 
@@ -99,7 +138,7 @@ void ComboCSplineFFTTest()
         }
     }
     printf("# training zeros: %d\n", n_zeros_base);
-    int newL = 1024;
+    int newL = 2048;
     float *predY = (float *)malloc(newL*sizeof(float));
     float *predX = (float *)malloc(newL*sizeof(float));
     //Keep start and end "time" values within those we've
