@@ -17,4 +17,6 @@ extern "C"
 //Test functions
 void TestFFT();
 void TestCSpline();
+void ComboCSplineFFTTest();
+void RRPracticeTest();
 #endif //SFMATH_SFMATHCONSOLE_H

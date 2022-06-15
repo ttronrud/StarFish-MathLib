@@ -2,6 +2,7 @@
 // Created by ttronrud on 2022-06-10.
 // Based on https://github.com/tomer953/cubic-spline
 // Which is based on https://www.math.ntnu.no/emner/TMA4215/2008h/cubicsplines.pdf
+//https://cse.engineering.nyu.edu/~mleung/CS3734/s03/ch07/cubicSpline.pdf
 // and uses a double-derivative method to generate spline coefficients
 //
 
@@ -37,10 +38,11 @@ CubicSpline::CubicSpline(float *xdat, float *ydat, unsigned int N)
     xData[datN] = xdat[datN];
     yData[datN] = ydat[datN];
     ftt[0] = 0; //f''(0) = 0
-    //Calculate the double-derivative from our dx and dy values
+    //Calculate z_i+1 (sectional second derivative) from our dx and dy values
+    //This ends up being the change in dy (dy_i+1-dy_i) over x_i+2-x_i
     for(unsigned int i = 0; i < N-2; i++)
     {
-        ftt[i+1] = 3*(b[i+1]-b[i])/(h[i+1] + h[i]);
+        ftt[i+1] = (b[i+1]-b[i])/(h[i+1] + h[i]);
     }
     ftt[N-1] = 0; //f''(xn) = 0
     //now, the spline coeffs

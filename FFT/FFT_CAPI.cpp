@@ -64,7 +64,7 @@ SFMATH_EXPORT void __stdcall FFT_PSD(float *data, unsigned int data_len, bool us
 
     for(int i = 0; i < N; i++)
     {
-        out_data[i] = sqrt(cdata[i].re*cdata[i].re + cdata[i].im*cdata[i].im)/N; //get magnitude for spectrum
+        out_data[i] = sqrt(cdata[i].re*cdata[i].re + cdata[i].im*cdata[i].im); //get magnitude for spectrum
         //std::cout << out_data[i] << std::endl;
     }
     *out_data_len = N; //write N to the out-data's length
