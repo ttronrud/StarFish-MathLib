@@ -19,6 +19,8 @@ int main(int argc, char * argv[])
     RRPracticeTest();
 }
 //Shows an example of reading in a list of R-R intervals
+//Using a spline to re-sample the data,
+//And calculation of the power spectrum
 void RRPracticeTest()
 {
     FILE *file;
@@ -83,22 +85,9 @@ void RRPracticeTest()
     //Create a new array for the subsample of the spline in the window
     float* spl_samp = (float *)malloc(window_size*sizeof(float));
     int out_len = 0;
-    //iterate over windows
-    for(int w = 0; w < n_wind; w++)
-    {
-        //construct spline subsample in the window
-        for(int j = 0; j < window_size; j++)
-        {
-            spl_samp[j] = splY[w*window_size + j];
-        }
-        //Get the PSD from this subsample
-        FFT_PSD(spl_samp,(unsigned)window_size,true,out_spec,&out_len);
-        //and add it to the total spectrum
-        for(int j = 0; j < out_len/2; j++)
-        {
-            tot_spec[j] += out_spec[j]/(1.0*n_wind); //Average all windows for the total
-        }
-    }
+
+    //try with our PSD windows method
+    FFT_PSD_windows(splY, L, window_size, true,  tot_spec, &out_len);
 
     std::cout << out_len << std::endl;
     std::cout << "total t = " << t << std::endl;

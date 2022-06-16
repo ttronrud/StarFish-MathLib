@@ -42,6 +42,48 @@ SFMATH_EXPORT void __stdcall FFT_PredictN(unsigned int data_len, int *out_data_l
     *out_data_len = N;
 }
 
+/*
+ * FFT_PSD_windows
+ * An intermediary function to take in a long array of data,
+ * split into windows of a specific size (preferably power of 2!),
+ * and return the averaged PSD across all windows over the data
+ * by reference!
+ */
+SFMATH_EXPORT void __stdcall FFT_PSD_windows(float *data, unsigned int data_len, unsigned int window_size, bool use_hanning, float *out_data, int*out_data_len)
+{
+
+    if(out_data == NULL || out_data_len == NULL)
+        return;
+    //how many windows?
+    unsigned n_wind = data_len/window_size;
+    float *tot_psd = (float *)malloc(window_size*sizeof(float));
+    float *tmp_psd = (float *)malloc(window_size*sizeof(float));
+    float *tmp_dat = (float *)malloc(window_size*sizeof(float));
+    int out_len = 0;
+
+    for(int j = 0; j < window_size; j++)
+    {
+        out_data[j] = 0; //zero the total PSD so we can add to it
+    }
+
+    for(int i = 0; i < n_wind; i++)
+    {
+        //construct window of data
+        for(int j = 0; j < window_size; j++)
+        {
+            tmp_dat[j] = data[i*window_size + j]; //get offset data
+        }
+        FFT_PSD(tmp_dat, window_size, use_hanning, tmp_psd, out_data_len);
+        //now add to total PSD, which is our output-by-reference
+        for(int j = 0; j < window_size; j++)
+        {
+            out_data[j] += tmp_psd[j]/(1.0*n_wind);
+        }
+    }
+
+
+}
+
 SFMATH_EXPORT void __stdcall FFT_PSD(float *data, unsigned int data_len, bool use_hanning, float *out_data, int*out_data_len)
 {
     if(out_data == NULL)
