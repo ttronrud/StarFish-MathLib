@@ -56,6 +56,9 @@ CubicSpline::CubicSpline(float *xdat, float *ydat, unsigned int N)
         coeffs[i][2] = b[i] - h[i]*(ftt[i+1] + 2*ftt[i])/6; //C
         coeffs[i][3] = ydat[i]; //D
     }
+    free(ftt);
+    free(b);
+    free(h);
 }
 
 float CubicSpline::Interpolate(float x)

@@ -17,6 +17,7 @@ int main(int argc, char * argv[])
     //TestCSpline();
     //ComboCSplineFFTTest();
     RRPracticeTest();
+    return 0;
 }
 //Shows an example of reading in a list of R-R intervals
 //Using a spline to re-sample the data,
@@ -26,7 +27,7 @@ void RRPracticeTest()
     FILE *file;
     file = fopen("RRs.txt", "r");
     char buffer[16];
-    int st = 50000;
+    int st = 20000;
     float recording_time = 128; //seconds
     int alloc_size = 250;
     int N = 0;
@@ -40,7 +41,7 @@ void RRPracticeTest()
     //cumulative time T is our x-axis for spline fitting
     //we're pretending there's a recording "time" limit,
     //which we check in our loop
-    while(fgets(buffer,16,file)!=NULL && t < recording_time)
+    while(fgets(buffer,16,file)!=NULL && t < recording_time && i < alloc_size)
     {
         if(_reali < st)
         {
@@ -52,6 +53,7 @@ void RRPracticeTest()
         T[i] = t;
         i++;
     }
+    fclose(file); //close file
     N = i; //The number of intervals
 
     //now, spline fit//
@@ -75,15 +77,13 @@ void RRPracticeTest()
     CSpline_Interp(T, RRs, (unsigned int)N, splX, splY, (unsigned int)L);
     //Now, the output spectrum, and the total spectrum
     //we only care up to 0.4 (not even 0.5Hz), so we'll just save window_size/2 for total spec
-    float* out_spec = (float *)malloc(window_size*sizeof(float));
-    float* tot_spec = (float *)malloc((window_size/2)*sizeof(float));
+    float* tot_spec = (float *)malloc((window_size)*sizeof(float));
     //zero this array
     for(int m = 0; m < window_size/2; m++)
     {
         tot_spec[m] = 0;
     }
     //Create a new array for the subsample of the spline in the window
-    float* spl_samp = (float *)malloc(window_size*sizeof(float));
     int out_len = 0;
 
     //try with our PSD windows method
@@ -99,6 +99,11 @@ void RRPracticeTest()
         printf("[%.5f, %.5f],\n",Hz_Max*(1.0*i)/(1.0*window_size),tot_spec[i]);
     }
 
+    free(RRs);
+    free(T);
+    free(splX);
+    free(splY);
+    free(tot_spec);
 
 }
 void ComboCSplineFFTTest()
@@ -158,6 +163,12 @@ void ComboCSplineFFTTest()
     }
     printf("Peak at %.3f, with amplitude %.3f\n",Hz_Max*(1.0*max_b)/(1.0*out_len),max_val);
     printf("\n\n");
+
+    free(initialX);
+    free(initialY);
+    free(predY);
+    free(predX);
+    free(out_spec);
 }
 
 void TestCSpline()
@@ -215,6 +226,11 @@ void TestCSpline()
 
     }
     printf("# predicted zeros: %d", n_zeros_new);
+
+    free(initialX);
+    free(initialY);
+    free(predY);
+    free(predX);
 }
 
 void TestFFT()
@@ -252,4 +268,8 @@ void TestFFT()
     }
     printf("Peak at %.2f, with amplitude %.2f\n",Hz_Max*(1.0*max_b)/(1.0*out_len),max_val);
     printf("\n\n");
+
+    free(initialX);
+    free(initialY);
+    free(out_spec);
 }

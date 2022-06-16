@@ -24,15 +24,16 @@
  *               data -- e.g. total time of 256s, with 512 samples, gives a freq of 2 Hz to out_len.
  *               This means the bin->freq mapping for bin i, calculated on data with # samples N over time T is:
  *                          freq(i) = N/T * i/out_len (Hz)
- * FFT ~ take arrays of real and imaginary components, perform an FFT, and write the real and imaginary spectral
- *       components to pre-allocated arrays
+ * FFT_PSD ~ take an array of data, compute the FFT spectrum, and calculate the power with the magnitude of
+ *           the real+imaginary vectors.
+ * FFT_PSD_windows ~ compute the average FFT PSD on windows across the entire data.
  *
  * Notes:
  * The returned spectra will have an index->frequency mapping based on the output length, L. The mapping is:
  * (index/L) Hz.
  */
 extern "C" {
-
+//Finds the nearest power-of-two for output spectrum length
 SFMATH_EXPORT void __stdcall FFT_PredictN(unsigned int data_len, int *out_data_len)
 {
     if (out_data_len == NULL)
@@ -56,7 +57,6 @@ SFMATH_EXPORT void __stdcall FFT_PSD_windows(float *data, unsigned int data_len,
         return;
     //how many windows?
     unsigned n_wind = data_len/window_size;
-    float *tot_psd = (float *)malloc(window_size*sizeof(float));
     float *tmp_psd = (float *)malloc(window_size*sizeof(float));
     float *tmp_dat = (float *)malloc(window_size*sizeof(float));
     int out_len = 0;
@@ -80,7 +80,8 @@ SFMATH_EXPORT void __stdcall FFT_PSD_windows(float *data, unsigned int data_len,
             out_data[j] += tmp_psd[j]/(1.0*n_wind);
         }
     }
-
+    free(tmp_psd);
+    free(tmp_dat);
 
 }
 
