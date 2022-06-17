@@ -10,7 +10,7 @@
 //#include "../FFT/FFT_CAPI.h"
 #include <iostream>
 
-int main(int argc, char * argv[])
+int main()
 {
     //SFMath_Hello();
     //TestFFT();
@@ -30,7 +30,7 @@ void RRPracticeTest()
     int st = 20000;
     float recording_time = 128; //seconds
     int alloc_size = 250;
-    int N = 0;
+    int N;
     int i = 0;
     //malloc because I'm a C boi
     float *RRs = (float*)malloc(alloc_size*sizeof(float));
@@ -43,6 +43,7 @@ void RRPracticeTest()
     //which we check in our loop
     while(fgets(buffer,16,file)!=NULL && t < recording_time && i < alloc_size)
     {
+        //Skip ahead to starting index
         if(_reali < st)
         {
             _reali++;
@@ -58,11 +59,10 @@ void RRPracticeTest()
 
     //now, spline fit//
     //We'll resample at 1Hz
-    int L = t;
+    //so our array length will be the number of seconds
+    int L = int(t);
     //And our PSD window will be 64 second chunks
     int window_size = 64;
-    //How many windows we'll use
-    int n_wind = L/window_size;
     //and allocate the spline X and Y arrays
     float *splX = (float *)malloc(L*sizeof(float));
     float *splY = (float *)malloc(L*sizeof(float));
@@ -70,13 +70,18 @@ void RRPracticeTest()
     //and we'll just zero our spline Y, so that no weird shit happens
     for(i = 0; i < L; i++)
     {
-        splX[i] = i*t/L; //how much of the total time
+        splX[i] = 1.0*i;//*t/L; //how much of the total time -- since we're sticking to one per second, up to the int
+                    //      value of t, we can just use index as x domain
         splY[i] = 0; //just zero this array
     }
     //Run our spline interpolation!
+    //This takes the unevenly-sampled RR data, fits a spline between the points,
+    //and resamples at even time steps, which makes the data valid for an FFT!
     CSpline_Interp(T, RRs, (unsigned int)N, splX, splY, (unsigned int)L);
     //Now, the output spectrum, and the total spectrum
-    //we only care up to 0.4 (not even 0.5Hz), so we'll just save window_size/2 for total spec
+    //technically, the maximum number of bins will be the closest power of 2 to window_size
+    //since our window_size *is* a power of two,
+    //we'll just save window_size for total spec
     float* tot_spec = (float *)malloc((window_size)*sizeof(float));
     //zero this array
     for(int m = 0; m < window_size/2; m++)
@@ -92,13 +97,15 @@ void RRPracticeTest()
     std::cout << out_len << std::endl;
     std::cout << "total t = " << t << std::endl;
     std::cout << "#bins/total t = Hz = " << (L/t) << std::endl;
-
+    //FFT frequency range is based on the sampling frequency of the input data,
+    //which is array length divided by the time domain extent (L/t, in this case)
+    //The bins will be evenly spaced up to this max frequency
     float Hz_Max = (1.0*L)/(t); //max output frequency
     for(int i = 0; i < window_size/2; i++)
     {
         printf("[%.5f, %.5f],\n",Hz_Max*(1.0*i)/(1.0*window_size),tot_spec[i]);
     }
-
+    //free everything
     free(RRs);
     free(T);
     free(splX);
