@@ -7,7 +7,6 @@
 #include <cstdio>
 #include <fstream>
 #include "SFMathConsole.h"
-//#include "../FFT/FFT_CAPI.h"
 #include <iostream>
 
 int main()
@@ -27,7 +26,7 @@ void RRPracticeTest()
     FILE *file;
     file = fopen("RRs.txt", "r");
     char buffer[16];
-    int st = 20000;
+    int st = 75000;
     float recording_time = 128; //seconds
     int alloc_size = 250;
     int N;
@@ -70,7 +69,9 @@ void RRPracticeTest()
     //and we'll just zero our spline Y, so that no weird shit happens
     for(i = 0; i < L; i++)
     {
-        splX[i] = 1.0*i;//*t/L; //how much of the total time -- since we're sticking to one per second, up to the int
+        //For the default values (where L = int(t)), we just need 1.0*i for our time.
+        //if you want to split more finely, however, you'll need the t/L term to normalize end time
+        splX[i] = 1.0*i*t/L; //how much of the total time -- since we're sticking to one per second, up to the int
                     //      value of t, we can just use index as x domain
         splY[i] = 0; //just zero this array
     }

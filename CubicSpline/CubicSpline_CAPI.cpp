@@ -18,7 +18,7 @@
  *                  B = coeff[i][1]
  *                  C = coeff[i][2]
  *                  D = coeff[i][3]
- *                  h = x - X[i]
+ *                  h = x - X[i] //Offset from spline root
  *                  S_i(x) = A*h^3 + B*h^2 + C*h + D
  *
  * Notes:

@@ -36,7 +36,7 @@ extern "C" {
 //Finds the nearest power-of-two for output spectrum length
 SFMATH_EXPORT void __stdcall FFT_PredictN(unsigned int data_len, int *out_data_len)
 {
-    if (out_data_len == NULL)
+    if (out_data_len == nullptr)
         return;
     unsigned r = log2_u(data_len);
     unsigned N = 1 << r;
@@ -53,13 +53,12 @@ SFMATH_EXPORT void __stdcall FFT_PredictN(unsigned int data_len, int *out_data_l
 SFMATH_EXPORT void __stdcall FFT_PSD_windows(float *data, unsigned int data_len, unsigned int window_size, bool use_hanning, float *out_data, int*out_data_len)
 {
 
-    if(out_data == NULL || out_data_len == NULL)
+    if(out_data == nullptr || out_data_len == nullptr)
         return;
     //how many windows?
     unsigned n_wind = data_len/window_size;
     float *tmp_psd = (float *)malloc(window_size*sizeof(float));
     float *tmp_dat = (float *)malloc(window_size*sizeof(float));
-    int out_len = 0;
 
     for(int j = 0; j < window_size; j++)
     {
@@ -87,7 +86,7 @@ SFMATH_EXPORT void __stdcall FFT_PSD_windows(float *data, unsigned int data_len,
 
 SFMATH_EXPORT void __stdcall FFT_PSD(float *data, unsigned int data_len, bool use_hanning, float *out_data, int*out_data_len)
 {
-    if(out_data == NULL)
+    if(out_data == nullptr)
         return;
     //Create our complex data representation
     complex_f *cdata;
@@ -117,7 +116,7 @@ SFMATH_EXPORT void __stdcall FFT_PSD(float *data, unsigned int data_len, bool us
 
 SFMATH_EXPORT void __stdcall FFT_Spectrum(float *data_re, float *data_im, unsigned int data_len, bool use_hanning, float *out_data_re, float *out_data_im, int *out_len)
 {
-    if(out_data_im == NULL || out_data_re == NULL)
+    if(out_data_im == nullptr || out_data_re == nullptr)
         return; //can't add to null pointers
     unsigned r = log2_u(data_len);
     unsigned N = 1 << r; //how many indices will be returned?
@@ -126,7 +125,7 @@ SFMATH_EXPORT void __stdcall FFT_Spectrum(float *data_re, float *data_im, unsign
     cdata = (complex_f*)malloc(data_len*sizeof(complex_f));
 
     //if the imaginary component isn't defined, just keep it zero-d
-    if(data_im == NULL)
+    if(data_im == nullptr)
     {
         //first, we need to turn the components into complex data
         for(int i = 0; i < data_len; i++)
@@ -160,7 +159,7 @@ SFMATH_EXPORT void __stdcall FFT_Spectrum(float *data_re, float *data_im, unsign
         out_data_re[i] = cdata[i].re/N;
         out_data_im[i] = cdata[i].im/N;
     }
-    if(out_len == NULL)
+    if(out_len == nullptr)
     {
         out_len = (int*)malloc(sizeof(int));
     }

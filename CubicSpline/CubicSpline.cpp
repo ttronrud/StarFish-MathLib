@@ -8,7 +8,7 @@
 
 #include <cstdlib>
 #include "CubicSpline.h"
-#include <iostream>
+#include <iostream> //For debug priiints!
 
 //Generates N-1 functions S(x) where
 // S(x) = S_i(x-x_i) for x_i < x < x_i+1
@@ -42,6 +42,9 @@ CubicSpline::CubicSpline(float *xdat, float *ydat, unsigned int N)
     //This ends up being the change in dy (dy_i+1-dy_i) over x_i+2-x_i
     for(unsigned int i = 0; i < N-2; i++)
     {
+        //Original source has a factor of 3 here that makes literally no difference,
+        //besides making it impossible to motivate mathematically.
+        //Now it's just a bog-standard 2nd derivative
         ftt[i+1] = (b[i+1]-b[i])/(h[i+1] + h[i]);
     }
     ftt[N-1] = 0; //f''(xn) = 0
@@ -80,11 +83,20 @@ float CubicSpline::Interpolate(float x)
     }
     else
     {
-        guess_i = x/xData[datN]*datN - 1; //find a guess for initial index to hunt from
+        //find a guess for initial index to hunt from
+        //Initial assumption of even spacing (which we adjust later!)
+        guess_i = x/xData[datN]*datN - 1;
         if(guess_i < 0)
             guess_i = 0;
         else if(guess_i > datN-1)
             guess_i = datN-1;
+
+        //check that value at initial guess is < x
+        //Since we need our knot to precede x
+        while(xData[guess_i] > x && guess_i > 0)
+        {
+            guess_i--; //decrement backwards until we've fixed the problem
+        }
         //Start at that guess, and see if x_i <= x < x_i+1
         //if so, we use those coefficients to calculate the interpolated value
         for(int i = guess_i; i < datN; i++)
@@ -96,6 +108,7 @@ float CubicSpline::Interpolate(float x)
                 break;
             }
         }
+        //we didn't find it from the guess
     }
 
     return newY;
