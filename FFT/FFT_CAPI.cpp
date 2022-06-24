@@ -4,7 +4,8 @@
 
 #include "../SFMathCAPI.h"
 #include "FFT_CAPI.h"
-#include "FFT.h"
+//#include "FFT.h"
+#include "cppFFT.h"
 #include <iostream>
 
 //~~~~~~~~~~FFT Methods~~~~~~~~~~//
@@ -38,7 +39,7 @@ SFMATH_EXPORT void __stdcall FFT_PredictN(unsigned int data_len, int *out_data_l
 {
     if (out_data_len == nullptr)
         return;
-    unsigned r = log2_u(data_len);
+    unsigned r = cppFFT::log2_u(data_len);
     unsigned N = 1 << r;
     *out_data_len = N;
 }
@@ -100,13 +101,16 @@ SFMATH_EXPORT void __stdcall FFT_PSD(float *data, unsigned int data_len, bool us
         if(use_hanning)
             cdata[i].re *= (0.5 - 0.5*cos(2*3.14159 * (i+1)/(data_len + 1)));
     }
-    unsigned r = log2_u(data_len);
+    unsigned r = cppFFT::log2_u(data_len);
     unsigned N = 1 << r; //how many indices will be returned?
-    ffti_f(cdata, r ,FFT_FORWARD);
+    std::unique_ptr<cppFFT> fft(new cppFFT(cdata, N, FFT_FORWARD));
+    fft->ffti_f();
+    //ffti_f(cdata, r ,FFT_FORWARD);
 
     for(int i = 0; i < N; i++)
     {
-        out_data[i] = sqrt(cdata[i].re*cdata[i].re + cdata[i].im*cdata[i].im); //get magnitude for spectrum
+        out_data[i] = sqrt(fft->res[i].re*fft->res[i].re + fft->res[i].im*fft->res[i].im);
+        //out_data[i] = sqrt(cdata[i].re*cdata[i].re + cdata[i].im*cdata[i].im); //get magnitude for spectrum
         //std::cout << out_data[i] << std::endl;
     }
     *out_data_len = N; //write N to the out-data's length
@@ -118,7 +122,7 @@ SFMATH_EXPORT void __stdcall FFT_Spectrum(float *data_re, float *data_im, unsign
 {
     if(out_data_im == nullptr || out_data_re == nullptr)
         return; //can't add to null pointers
-    unsigned r = log2_u(data_len);
+    unsigned r = cppFFT::log2_u(data_len);
     unsigned N = 1 << r; //how many indices will be returned?
     //Create our complex data representation
     complex_f *cdata;
@@ -152,12 +156,17 @@ SFMATH_EXPORT void __stdcall FFT_Spectrum(float *data_re, float *data_im, unsign
             }
         }
     }
-    ffti_f(cdata, r ,FFT_FORWARD);
+
+    std::unique_ptr<cppFFT> fft(new cppFFT(cdata, N, FFT_FORWARD));
+    fft->ffti_f();
+    //ffti_f(cdata, r ,FFT_FORWARD);
 
     for(int i = 0; i < N; i++)
     {
-        out_data_re[i] = cdata[i].re/N;
-        out_data_im[i] = cdata[i].im/N;
+        out_data_re[i] = fft->res[i].re/N;
+        out_data_im[i] = fft->res[i].im/N;
+        //out_data_re[i] = cdata[i].re/N;
+        //out_data_im[i] = cdata[i].im/N;
     }
     if(out_len == nullptr)
     {

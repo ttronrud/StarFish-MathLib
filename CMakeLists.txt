@@ -7,7 +7,7 @@ add_subdirectory(FFT)
 add_subdirectory(CubicSpline)
 
 
-add_library(SFMath SHARED SFMathCAPI.cpp FFT/FFT.cpp FFT/complex.cpp FFT/FFT_CAPI.cpp CubicSpline/CubicSpline.cpp CubicSpline/CubicSpline_CAPI.cpp)
-add_library(SFMath_STAT STATIC SFMathCAPI.cpp FFT/FFT.cpp FFT/complex.cpp FFT/FFT_CAPI.cpp CubicSpline/CubicSpline.cpp CubicSpline/CubicSpline_CAPI.cpp)
+add_library(SFMath SHARED SFMathCAPI.cpp FFT/FFT.cpp FFT/complex.cpp FFT/FFT_CAPI.cpp CubicSpline/CubicSpline.cpp CubicSpline/CubicSpline_CAPI.cpp FFT/cppFFT.cpp FFT/cppFFT.h)
+add_library(SFMath_STAT STATIC SFMathCAPI.cpp FFT/FFT.cpp FFT/complex.cpp FFT/FFT_CAPI.cpp CubicSpline/CubicSpline.cpp CubicSpline/CubicSpline_CAPI.cpp FFT/cppFFT.cpp FFT/cppFFT.h)
 
 add_subdirectory(SFMathConsole)

@@ -6,9 +6,7 @@
 
 #include "FFT.h"
 
-#include <cmath>
-
-#include <stdlib.h>
+#include <cstdlib>
 
 /*
  * Sean Anderson's Bit Twiddling Hacks

@@ -29,15 +29,11 @@ SOFTWARE.
 #ifndef SFMATH_FFT_H
 #define SFMATH_FFT_H
 
+#include "complex.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-
-#include "complex.h"
-
-
 
 typedef enum fft_dir {
     FFT_FORWARD,    /* kernel uses "-1" sign */
