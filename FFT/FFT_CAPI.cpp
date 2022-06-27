@@ -1,7 +1,6 @@
 //
 // Created by ttronrud on 2022-06-10.
 //
-
 #include "../SFMathCAPI.h"
 #include "FFT_CAPI.h"
 //#include "FFT.h"
@@ -51,20 +50,16 @@ SFMATH_EXPORT void __stdcall FFT_PredictN(unsigned int data_len, int *out_data_l
  * and return the averaged PSD across all windows over the data
  * by reference!
  */
-SFMATH_EXPORT void __stdcall FFT_PSD_windows(float *data, unsigned int data_len, unsigned int window_size, bool use_hanning, float *out_data, int*out_data_len)
+SFMATH_EXPORT void __stdcall FFT_PSD_windows(double *data, unsigned int data_len, unsigned int window_size, bool use_hanning, double *out_data, int*out_data_len)
 {
 
     if(out_data == nullptr || out_data_len == nullptr)
         return;
     //how many windows?
     unsigned n_wind = data_len/window_size;
-    float *tmp_psd = (float *)malloc(window_size*sizeof(float));
-    float *tmp_dat = (float *)malloc(window_size*sizeof(float));
-
-    for(int j = 0; j < window_size; j++)
-    {
-        out_data[j] = 0; //zero the total PSD so we can add to it
-    }
+    double *tmp_psd = (double *)malloc(window_size*sizeof(double));
+    double *tmp_dat = (double *)malloc(window_size*sizeof(double));
+    memset(out_data,0,window_size*sizeof(double));
 
     for(int i = 0; i < n_wind; i++)
     {
@@ -85,21 +80,24 @@ SFMATH_EXPORT void __stdcall FFT_PSD_windows(float *data, unsigned int data_len,
 
 }
 
-SFMATH_EXPORT void __stdcall FFT_PSD(float *data, unsigned int data_len, bool use_hanning, float *out_data, int*out_data_len)
+SFMATH_EXPORT void __stdcall FFT_PSD(double *data, unsigned int data_len, bool use_hanning, double *out_data, int*out_data_len)
 {
     if(out_data == nullptr)
         return;
     //Create our complex data representation
-    complex_f *cdata;
-    cdata = (complex_f*)malloc(data_len*sizeof(complex_f));
+    SFComplex *cdata;
+    cdata = (SFComplex *)malloc(data_len*sizeof(SFComplex));
 
     //first, we need to turn the real data into complex data
     for(int i = 0; i < data_len; i++)
     {
-        cdata[i].re = data[i];
-        cdata[i].im = 0.0f;
+        cdata[i] = SFComplex(data[i],0.0);
+        //cdata[i].re = data[i];
+        //cdata[i].im = 0.0f;
         if(use_hanning)
-            cdata[i].re *= (0.5 - 0.5*cos(2*3.14159 * (i+1)/(data_len + 1)));
+        {
+            cdata[i] = cdata[i]*(0.5 - 0.5*cos(2*3.14159 * (i+1)/(data_len + 1)));
+        }
     }
     unsigned r = cppFFT::log2_u(data_len);
     unsigned N = 1 << r; //how many indices will be returned?
@@ -109,7 +107,8 @@ SFMATH_EXPORT void __stdcall FFT_PSD(float *data, unsigned int data_len, bool us
 
     for(int i = 0; i < N; i++)
     {
-        out_data[i] = sqrt(fft->res[i].re*fft->res[i].re + fft->res[i].im*fft->res[i].im);
+        out_data[i] = fft->res[i].mag();
+                //sqrt(fft->res[i].re*fft->res[i].re + fft->res[i].im*fft->res[i].im);
         //out_data[i] = sqrt(cdata[i].re*cdata[i].re + cdata[i].im*cdata[i].im); //get magnitude for spectrum
         //std::cout << out_data[i] << std::endl;
     }
@@ -118,15 +117,15 @@ SFMATH_EXPORT void __stdcall FFT_PSD(float *data, unsigned int data_len, bool us
     free(cdata); //free our complex data, now that we're done with it
 }
 
-SFMATH_EXPORT void __stdcall FFT_Spectrum(float *data_re, float *data_im, unsigned int data_len, bool use_hanning, float *out_data_re, float *out_data_im, int *out_len)
+SFMATH_EXPORT void __stdcall FFT_Spectrum(double *data_re, double *data_im, unsigned int data_len, bool use_hanning, double *out_data_re, double *out_data_im, int *out_len)
 {
     if(out_data_im == nullptr || out_data_re == nullptr)
         return; //can't add to null pointers
     unsigned r = cppFFT::log2_u(data_len);
     unsigned N = 1 << r; //how many indices will be returned?
     //Create our complex data representation
-    complex_f *cdata;
-    cdata = (complex_f*)malloc(data_len*sizeof(complex_f));
+    SFComplex *cdata;
+    cdata = (SFComplex*)malloc(data_len*sizeof(SFComplex));
 
     //if the imaginary component isn't defined, just keep it zero-d
     if(data_im == nullptr)
@@ -134,11 +133,13 @@ SFMATH_EXPORT void __stdcall FFT_Spectrum(float *data_re, float *data_im, unsign
         //first, we need to turn the components into complex data
         for(int i = 0; i < data_len; i++)
         {
-            cdata[i].re = data_re[i];
-            cdata[i].im = 0.0f;
+            cdata[i] = SFComplex(data_re[i],0.0);
+            //cdata[i].re = data_re[i];
+            //cdata[i].im = 0.0f;
 
             if(use_hanning)
-                cdata[i].re *= (0.5 - 0.5*cos(2*3.14159 * (i+1)/(data_len + 1)));
+                cdata[i] = cdata[i]*(0.5 - 0.5*cos(2*3.14159 * (i+1)/(data_len + 1)));
+            //cdata[i].re *= (0.5 - 0.5*cos(2*3.14159 * (i+1)/(data_len + 1)));
         }
     }
     else //If there's an imaginary input component
@@ -146,13 +147,15 @@ SFMATH_EXPORT void __stdcall FFT_Spectrum(float *data_re, float *data_im, unsign
         //first, we need to turn the components into complex data
         for(int i = 0; i < data_len; i++)
         {
-            cdata[i].re = data_re[i];
-            cdata[i].im = data_im[i];
+            cdata[i] = SFComplex(data_re[i], data_im[i]);
+            //cdata[i].re = data_re[i];
+            //cdata[i].im = data_im[i];
 
             if(use_hanning)
             {
-                cdata[i].re *= (0.5 - 0.5*cos(2*3.14159 * (i+1)/(data_len + 1)));
-                cdata[i].im *= (0.5 - 0.5*cos(2*3.14159 * (i+1)/(data_len + 1)));
+                cdata[i] = cdata[i]*(0.5 - 0.5*cos(2*3.14159 * (i+1)/(data_len + 1)));
+                //cdata[i].re *= (0.5 - 0.5*cos(2*3.14159 * (i+1)/(data_len + 1)));
+                //cdata[i].im *= (0.5 - 0.5*cos(2*3.14159 * (i+1)/(data_len + 1)));
             }
         }
     }
@@ -163,8 +166,8 @@ SFMATH_EXPORT void __stdcall FFT_Spectrum(float *data_re, float *data_im, unsign
 
     for(int i = 0; i < N; i++)
     {
-        out_data_re[i] = fft->res[i].re/N;
-        out_data_im[i] = fft->res[i].im/N;
+        out_data_re[i] = fft->res[i].mag()/N;
+        //out_data_im[i] = fft->res[i].im/N;
         //out_data_re[i] = cdata[i].re/N;
         //out_data_im[i] = cdata[i].im/N;
     }

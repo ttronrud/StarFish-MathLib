@@ -16,19 +16,20 @@ typedef enum fft_dir {
 class cppFFT {
 public:
     //vars
-    complex_f *data;
+    SFComplex *data;
     unsigned log2_N;
     fft_dir direction;
-    complex_f *res;
+    SFComplex *res;
     //TO DO: Replace with Complex class
-    cppFFT(complex_f *indat, int N, fft_dir dir);
+    cppFFT(SFComplex *indat, int N, fft_dir dir);
+    //cppFFT(Complex<double> *indat, int N, fft_dir dir);
     static unsigned log2_u(unsigned v);
 /* In-place FFT */
     void ffti_f();
 
 private:
-    void ffti_shuffle_f(complex_f data[], unsigned log2_N);
-    void ffti_evaluate_f(complex_f data[], unsigned log2_N, fft_dir direction);
+    void ffti_shuffle_f();
+    void ffti_evaluate_f();
 };
 
 

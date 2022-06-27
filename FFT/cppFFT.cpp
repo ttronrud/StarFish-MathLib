@@ -5,14 +5,14 @@
 #include "cppFFT.h"
 #include <cstring>
 
-cppFFT::cppFFT(complex_f *indat, int N, fft_dir dir)
+cppFFT::cppFFT(SFComplex *indat, int N, fft_dir dir)
 {
-    unsigned n = (unsigned)N;
+    auto n = (unsigned)N;
     log2_N = log2_u(n);
-    data = (complex_f *) malloc(n*sizeof(complex_f)); //store original data
-    res = (complex_f *) malloc(n*sizeof(complex_f)); //where the result will live
-    memcpy(data, indat, n*sizeof(complex_f));
-    memcpy(res, indat, n*sizeof(complex_f));
+    data = (SFComplex *) malloc(n*sizeof(SFComplex)); //store original data
+    res = (SFComplex *) malloc(n*sizeof(SFComplex)); //where the result will live
+    memcpy(data, indat, n*sizeof(SFComplex));
+    memcpy(res, indat, n*sizeof(SFComplex));
     direction = dir;
 }
 
@@ -42,11 +42,11 @@ void cppFFT::ffti_f()
 
     //Now only "res" will be modified
     //and the original data is preserved
-    ffti_shuffle_f(res, log2_N);
-    ffti_evaluate_f(res, log2_N, direction);
+    ffti_shuffle_f();
+    ffti_evaluate_f();
 }
 
-void cppFFT::ffti_shuffle_f(complex_f data[], unsigned log2_N)
+void cppFFT::ffti_shuffle_f()
 {
     /*
      * Basic Bit-Reversal Scheme:
@@ -70,9 +70,9 @@ void cppFFT::ffti_shuffle_f(complex_f data[], unsigned log2_N)
 
     for (i = 0, j = 0; i < N; i++) {
         if (j > i) {
-            complex_f tmp = data[i];
-            data[i] = data[j];
-            data[j] = tmp;
+            SFComplex tmp = res[i];
+            res[i] = res[j];
+            res[j] = tmp;
         }
 
         /*
@@ -107,7 +107,7 @@ void cppFFT::ffti_shuffle_f(complex_f data[], unsigned log2_N)
 
 
 
-void cppFFT::ffti_evaluate_f(complex_f data[], unsigned log2_N, fft_dir direction)
+void cppFFT::ffti_evaluate_f()
 {
     /*
      * In-place FFT butterfly algorithm
@@ -139,8 +139,8 @@ void cppFFT::ffti_evaluate_f(complex_f data[], unsigned log2_N, fft_dir directio
     unsigned i_e, i_o;
     double theta_2pi;
     double theta;       /* Use double for precision */
-    complex_d Wm, Wmk;  /* Use double for precision */
-    complex_d u, t;     /* Use double for precision */
+    SFComplex Wm, Wmk;  /* Use double for precision */
+    SFComplex u, t;     /* Use double for precision */
 
     N = 1 << log2_N;
     theta_2pi = (direction == FFT_FORWARD) ? -M_PI : M_PI;
@@ -151,26 +151,33 @@ void cppFFT::ffti_evaluate_f(complex_f data[], unsigned log2_N, fft_dir directio
         m = 1 << r;
         md2 = m >> 1;
         theta = theta_2pi / m;
-        Wm.re = cos(theta);
-        Wm.im = sin(theta);
+        Wm = SFComplex(cos(theta), sin(theta));
+        //Wm.real = cos(theta);
+        //Wm.imag = sin(theta);
         for (n = 0; n < N; n += m)
         {
-            Wmk.re = 1.f;
-            Wmk.im = 0.f;
+            Wmk = SFComplex(1.0,0.0);
+            //Wmk.re = 1.f;
+            //Wmk.im = 0.f;
             for (k = 0; k < md2; k++)
             {
                 i_e = n + k;
                 i_o = i_e + md2;
-                u.re = data[i_e].re;
-                u.im = data[i_e].im;
-                t.re = complex_mul_re(Wmk.re, Wmk.im, data[i_o].re, data[i_o].im);
-                t.im = complex_mul_im(Wmk.re, Wmk.im, data[i_o].re, data[i_o].im);
-                data[i_e].re = u.re + t.re;
-                data[i_e].im = u.im + t.im;
-                data[i_o].re = u.re - t.re;
-                data[i_o].im = u.im - t.im;
-                t.re = complex_mul_re(Wmk.re, Wmk.im, Wm.re, Wm.im);
-                t.im = complex_mul_im(Wmk.re, Wmk.im, Wm.re, Wm.im);
+                u = SFComplex(res[i_e]);
+                //u.re = res[i_e].re;
+                //u.im = res[i_e].im;
+                t = Wmk*res[i_o];
+                //t.re = complex_mul_re(Wmk.re, Wmk.im, res[i_o].re, res[i_o].im);
+                //t.im = complex_mul_im(Wmk.re, Wmk.im, res[i_o].re, res[i_o].im);
+                res[i_e] = u + t;
+                //res[i_e].re = u.re + t.re;
+                //res[i_e].im = u.im + t.im;
+                res[i_o] = u-t;
+                //res[i_o].re = u.re - t.re;
+                //res[i_o].im = u.im - t.im;
+                t = Wmk * Wm;
+                //t.re = complex_mul_re(Wmk.re, Wmk.im, Wm.re, Wm.im);
+                //t.im = complex_mul_im(Wmk.re, Wmk.im, Wm.re, Wm.im);
                 Wmk = t;
             }
         }

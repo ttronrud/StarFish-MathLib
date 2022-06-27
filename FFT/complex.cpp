@@ -4,27 +4,55 @@
 
 #include "complex.h"
 
-Complex::Complex(float re, float im)
+SFComplex::SFComplex(double re, double im)
 {
     real = re;
     imag = im;
 }
-//overload complex operators
-Complex Complex::operator + (Complex const &obj)
+//copy constructor
+SFComplex::SFComplex(SFComplex *c)
 {
-    Complex res;
+    real = c->real;
+    imag = c->imag;
+}
+//overload complex operators
+SFComplex SFComplex::operator + (SFComplex const &obj)
+{
+    SFComplex res;
     res.real = real + obj.real;
     res.imag = imag + obj.imag;
     return res;
 }
-Complex Complex::operator * (Complex const &obj)
+SFComplex SFComplex::operator - (SFComplex const &obj)
 {
-    Complex res;
+    SFComplex res;
+    res.real = real - obj.real;
+    res.imag = imag - obj.imag;
+    return res;
+}
+SFComplex SFComplex::operator * (SFComplex const &obj)
+{
+    SFComplex res;
     res.real = real*obj.real - imag*obj.imag;
     res.imag = real*obj.imag + imag*obj.real;
     return res;
 }
-float Complex::mag()
+SFComplex SFComplex::operator * (double mul)
 {
-    return sqrt(real*real + imag*imag); //magnitude is sqrt(zz*)
+    SFComplex res;
+    res.real = real*mul;
+    res.imag = imag*mul;
+    return res;
 }
+SFComplex SFComplex::operator / (double mul)
+{
+    SFComplex res;
+    res.real = real/mul;
+    res.imag = imag/mul;
+    return res;
+}
+double SFComplex::mag()
+{
+    return (double)sqrt(real*real + imag*imag); //magnitude is sqrt(zz*)
+}
+//////////////////

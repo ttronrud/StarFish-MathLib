@@ -32,8 +32,8 @@ void RRPracticeTest()
     int N;
     int i = 0;
     //malloc because I'm a C boi
-    float *RRs = (float*)malloc(alloc_size*sizeof(float));
-    float *T = (float *)malloc(alloc_size*sizeof(float));
+    double *RRs = (double*)malloc(alloc_size*sizeof(double));
+    double *T = (double *)malloc(alloc_size*sizeof(double));
     float t = 0;
     int _reali = 0;
     //Read through the RR list,
@@ -63,8 +63,8 @@ void RRPracticeTest()
     //And our PSD window will be 64 second chunks
     int window_size = 64;
     //and allocate the spline X and Y arrays
-    float *splX = (float *)malloc(L*sizeof(float));
-    float *splY = (float *)malloc(L*sizeof(float));
+    double *splX = (double *)malloc(L*sizeof(double));
+    double *splY = (double *)malloc(L*sizeof(double));
     //Now, we add our evenly-spaced spline X points
     //and we'll just zero our spline Y, so that no weird shit happens
     for(i = 0; i < L; i++)
@@ -79,11 +79,12 @@ void RRPracticeTest()
     //This takes the unevenly-sampled RR data, fits a spline between the points,
     //and resamples at even time steps, which makes the data valid for an FFT!
     CSpline_Interp(T, RRs, (unsigned int)N, splX, splY, (unsigned int)L);
+
     //Now, the output spectrum, and the total spectrum
     //technically, the maximum number of bins will be the closest power of 2 to window_size
     //since our window_size *is* a power of two,
     //we'll just save window_size for total spec
-    float* tot_spec = (float *)malloc((window_size)*sizeof(float));
+    double* tot_spec = (double *)malloc((window_size)*sizeof(double));
     //zero this array
     for(int m = 0; m < window_size/2; m++)
     {
@@ -118,12 +119,12 @@ void ComboCSplineFFTTest()
 {
     printf("Beginning CSpline generation. Going from 250s sine wave w/T=24.0s, Nsamp = 250\nto interpolate 1k values between t=(0,249).\n");
     float T = 5;
-    float total_t = 300.0; //seconds of "total elapsed time"
-    int L = 250; //how many samples for data
+    float total_t = 256.0; //seconds of "total elapsed time"
+    int L = 200; //how many samples for data
     float zeroval = 0.;
 
-    float *initialX = (float*)malloc(L*sizeof (float));
-    float *initialY = (float*)malloc(L*sizeof(float));
+    double *initialX = (double*)malloc(L*sizeof (double));
+    double *initialY = (double*)malloc(L*sizeof(double));
     //generate sin wave with specific frequency
     int n_zeros_base = 0;
     for(int i = 0; i < L; i++)
@@ -140,9 +141,9 @@ void ComboCSplineFFTTest()
         }
     }
     printf("# training zeros: %d\n", n_zeros_base);
-    int newL = 2048;
-    float *predY = (float *)malloc(newL*sizeof(float));
-    float *predX = (float *)malloc(newL*sizeof(float));
+    int newL = total_t;
+    double *predY = (double *)malloc(newL*sizeof(double));
+    double *predX = (double *)malloc(newL*sizeof(double));
     //Keep start and end "time" values within those we've
     //set the spline to interpolate between
     float eval_end_t = total_t-1;//249.0;
@@ -154,7 +155,7 @@ void ComboCSplineFFTTest()
     }
     CSpline_Interp(initialX, initialY, (unsigned int)L, predX, predY, (unsigned int)newL);
 
-    float* out_spec = (float *)malloc(newL*sizeof(float));
+    double* out_spec = (double *)malloc(newL*sizeof(double));
     int out_len = 0;
     FFT_PSD(predY,(unsigned)newL,true,out_spec,&out_len);
     int max_b = 0;
@@ -187,8 +188,8 @@ void TestCSpline()
     int L = 250; //how many samples for data
     float zeroval = 0.25;
 
-    float *initialX = (float*)malloc(L*sizeof (float));
-    float *initialY = (float*)malloc(L*sizeof(float));
+    double *initialX = (double*)malloc(L*sizeof (double));
+    double *initialY = (double*)malloc(L*sizeof(double));
     //generate sin wave with specific frequency
     int n_zeros_base = 0;
     for(int i = 0; i < L; i++)
@@ -206,12 +207,12 @@ void TestCSpline()
     }
     printf("# training zeros: %d\n", n_zeros_base);
     int newL = 1000;
-    float *predY = (float *)malloc(newL*sizeof(float));
-    float *predX = (float *)malloc(newL*sizeof(float));
+    double *predY = (double *)malloc(newL*sizeof(double));
+    double *predX = (double *)malloc(newL*sizeof(double));
     //Keep start and end "time" values within those we've
     //set the spline to interpolate between
-    float eval_end_t = 249.0;
-    float eval_start_t = 1.0;
+    double eval_end_t = 249.0;
+    double eval_start_t = 1.0;
     for(int i = 0; i < newL; i++)
     {
         predX[i] = eval_start_t + ((eval_end_t-eval_start_t)/(newL))*i;
@@ -251,15 +252,15 @@ void TestFFT()
     float Hz_Max = (1.0*L)/total_t; //max sample rate, which determines max output freq
     float zeroval = 0;
 
-    float *initialX = (float*)malloc(L*sizeof (float));
-    float* initialY = (float*)malloc(L*sizeof(float));
+    double *initialX = (double*)malloc(L*sizeof (double));
+    double* initialY = (double*)malloc(L*sizeof(double));
     //generate sin wave with specific frequency
     for(int i = 0; i < L; i++)
     {
         initialX[i] = (total_t/L)*i; //X is the time, in the HRV implementation. We're using constant time.
         initialY[i] = sin(2*3.14159*initialX[i]/T) + zeroval; //shift all positive
     }
-    float* out_spec = (float *)malloc(L*sizeof(float));
+    double* out_spec = (double *)malloc(L*sizeof(double));
     int out_len = 0;
 
     FFT_PSD(initialY,(unsigned)L,true,out_spec,&out_len);

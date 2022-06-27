@@ -13,18 +13,18 @@
 //Generates N-1 functions S(x) where
 // S(x) = S_i(x-x_i) for x_i < x < x_i+1
 // We'll use the numerical double-derivative of the data, ftt
-CubicSpline::CubicSpline(float *xdat, float *ydat, unsigned int N)
+CubicSpline::CubicSpline(double *xdat, double *ydat, unsigned int N)
 {
     //h[i] is the dx between indices
-    float *h = (float *)malloc((N-1)*sizeof(float ));
+    double *h = (double *)malloc((N-1)*sizeof(double ));
     //b[i] is dy between indices
-    float *b = (float *)malloc((N-1)*sizeof(float ));
+    double *b = (double *)malloc((N-1)*sizeof(double ));
     //ftt is an estimation of S''(x_i), or the double-derivative of the function
-    float *ftt = (float *)malloc((N)*sizeof(float ));
+    double *ftt = (double *)malloc((N)*sizeof(double ));
     //Here we allocate our object's variables
-    coeffs = (float **)malloc((N-1)*sizeof(float *));
-    xData = (float *)malloc(N*sizeof(float));
-    yData = (float *)malloc(N*sizeof(float));
+    coeffs = (double **)malloc((N-1)*sizeof(double *));
+    xData = (double *)malloc(N*sizeof(double));
+    yData = (double *)malloc(N*sizeof(double));
     datN = N-1;
     //Calculate dx and dy, while storing a copy of our input
     for(unsigned int i = 0; i < N-1; i++)
@@ -53,7 +53,7 @@ CubicSpline::CubicSpline(float *xdat, float *ydat, unsigned int N)
     for(unsigned int i = 0; i < N-1; i++)
     {
         //Allocate memory index to hold A,B,C, and D coeffs
-        coeffs[i] = (float*)malloc(4*sizeof(float));
+        coeffs[i] = (double*)malloc(4*sizeof(double));
         coeffs[i][0] = (ftt[i+1]-ftt[i])/(6*h[i]); //A
         coeffs[i][1] = ftt[i]/2; //B
         coeffs[i][2] = b[i] - h[i]*(ftt[i+1] + 2*ftt[i])/6; //C
@@ -64,7 +64,7 @@ CubicSpline::CubicSpline(float *xdat, float *ydat, unsigned int N)
     free(h);
 }
 
-float CubicSpline::Interpolate(float x)
+float CubicSpline::Interpolate(double x)
 {
     float newY = 0.0f;
     float h = 0.0f;

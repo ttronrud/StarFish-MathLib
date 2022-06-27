@@ -8,13 +8,13 @@
 
 class CubicSpline {
 public:
-    CubicSpline(float *xdat, float *ydat, unsigned int N); //construct
-    float Interpolate(float x); //Get spline value at point
+    CubicSpline(double *xdat, double *ydat, unsigned int N); //construct
+    float Interpolate(double x); //Get spline value at point
     int datN;
-    float *xData;
-    float *yData;
-    float *dX;
-    float **coeffs;
+    double *xData;
+    double *yData;
+    double *dX;
+    double **coeffs;
 };
 
 

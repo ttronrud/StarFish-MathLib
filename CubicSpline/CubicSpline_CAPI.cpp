@@ -32,7 +32,7 @@
 #include <iostream>
 extern "C"{
 
-SFMATH_EXPORT void __stdcall CSpline_Interp(float *X, float*Y, unsigned int N, float *intXs, float *predYs, unsigned int NPreds)
+SFMATH_EXPORT void __stdcall CSpline_Interp(double *X, double*Y, unsigned int N, double *intXs, double *predYs, unsigned int NPreds)
 {
     CubicSpline *cspline = new CubicSpline(X,Y,N);
     for(int i = 0; i < NPreds; i++)
@@ -40,7 +40,7 @@ SFMATH_EXPORT void __stdcall CSpline_Interp(float *X, float*Y, unsigned int N, f
         predYs[i] = cspline->Interpolate(intXs[i]);
     }
 }
-SFMATH_EXPORT void __stdcall CSpline_Coeffs(float *X, float*Y, unsigned int N, float **coeffs)
+SFMATH_EXPORT void __stdcall CSpline_Coeffs(double *X, double*Y, unsigned int N, double **coeffs)
 {
     CubicSpline *cspline = new CubicSpline(X,Y,N);
     for(int i = 0; i < N; i++)

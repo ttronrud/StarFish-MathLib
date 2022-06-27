@@ -8,16 +8,19 @@
 #include <cmath>
 
 //try a more complete complex class
-class Complex {
-private:
-    float real;
-    float imag;
+class SFComplex {
 public:
-    Complex(float re=0, float im=0);
+    double real;
+    double imag;
+    SFComplex(double re=0, double im=0);
+    SFComplex(SFComplex *c);
 
-    Complex operator + (Complex const &obj);
-    Complex operator * (Complex const &obj);
-    float mag();
+    SFComplex operator + (SFComplex const &obj);
+    SFComplex operator - (SFComplex const &obj);
+    SFComplex operator * (SFComplex const &obj);
+    SFComplex operator * (double const mul);
+    SFComplex operator / (double const mul);
+    double mag();
 };
 
 typedef struct complex_f {
