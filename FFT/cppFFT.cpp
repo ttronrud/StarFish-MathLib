@@ -1,6 +1,11 @@
 //
 // Created by ttronrud on 2022-06-24.
 //
+//
+// Original: https://github.com/RussellHaley/FFT-C by Russell Haley
+// With rshuston
+// Added to SFMath library by ttronrud
+//
 
 #include "cppFFT.h"
 #include <cstring>

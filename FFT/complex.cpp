@@ -1,5 +1,6 @@
 //
 // Created by ttronrud on 2022-06-10.
+// A complex number class with overloaded operators
 //
 
 #include "complex.h"
