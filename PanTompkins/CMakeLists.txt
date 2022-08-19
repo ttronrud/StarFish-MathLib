@@ -1,0 +1,1 @@
+add_library(SFMath_PanTompkins SHARED PanTompkins.cpp PanTompkins.h PanTompkins_CAPI.cpp PanTompkins_CAPI.h)

@@ -8,6 +8,7 @@
 #include <fstream>
 #include "SFMathConsole.h"
 #include <iostream>
+#include <vector>
 
 int main()
 {
@@ -15,9 +16,30 @@ int main()
     //TestFFT();
     //TestCSpline();
     //ComboCSplineFFTTest();
-    RRPracticeTest();
+    //RRPracticeTest();
+    ECG2RPractice();
     return 0;
 }
+
+void ECG2RPractice()
+{
+    FILE *file;
+    file = fopen("ECG.txt", "r");
+    int alloc_size = 5000;
+    char buffer[16];
+    std::vector<int> ECGPractice;
+    ECGPractice.reserve(alloc_size);
+    while(fgets(buffer,16,file)!=NULL && ECGPractice.size() < alloc_size)
+    {
+        int tmp = std::atoi(buffer);
+        //std::cout << tmp << std::endl;
+        ECGPractice.push_back(tmp);
+    }
+    fclose(file); //close file
+
+    RunPanTompkins(ECGPractice.data(), 1000);
+}
+
 //Shows an example of reading in a list of R-R intervals
 //Using a spline to re-sample the data,
 //And calculation of the power spectrum
@@ -117,10 +139,10 @@ void RRPracticeTest()
 }
 void ComboCSplineFFTTest()
 {
-    printf("Beginning CSpline generation. Going from 250s sine wave w/T=24.0s, Nsamp = 250\nto interpolate 1k values between t=(0,249).\n");
+    printf("Beginning CSpline generation. Going from 256s sine wave w/T=5.0s, Nsamp = 250\nto interpolate 1k values between t=(0,249).\n");
     float T = 5;
-    float total_t = 256.0; //seconds of "total elapsed time"
-    int L = 200; //how many samples for data
+    float total_t = 2048.0; //seconds of "total elapsed time"
+    int L = (int)(total_t*2/3); //how many samples for data
     float zeroval = 0.;
 
     double *initialX = (double*)malloc(L*sizeof (double));
@@ -146,8 +168,8 @@ void ComboCSplineFFTTest()
     double *predX = (double *)malloc(newL*sizeof(double));
     //Keep start and end "time" values within those we've
     //set the spline to interpolate between
-    float eval_end_t = total_t-1;//249.0;
-    float eval_start_t = 1.0;
+    float eval_end_t = total_t;
+    float eval_start_t = 0.0;
     for(int i = 0; i < newL; i++)
     {
         predX[i] = eval_start_t + ((eval_end_t-eval_start_t)/(newL))*i;
@@ -157,7 +179,9 @@ void ComboCSplineFFTTest()
 
     double* out_spec = (double *)malloc(newL*sizeof(double));
     int out_len = 0;
-    FFT_PSD(predY,(unsigned)newL,true,out_spec,&out_len);
+    unsigned window_size = 128;
+    //FFT_PSD(predY,(unsigned)newL,true,out_spec,&out_len);
+    FFT_PSD_windows(predY, (unsigned)newL, window_size, true, out_spec, &out_len);
     int max_b = 0;
     float max_val = 0;
     float Hz_Max = (1.0*newL)/(eval_end_t-eval_start_t); //max sample rate, which determines max output freq
