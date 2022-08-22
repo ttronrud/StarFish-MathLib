@@ -11,10 +11,10 @@
 #include <vector>
 
 extern "C" {
-    SFMATH_EXPORT void __stdcall RunPanTompkins(dataType *signal_data, int len_signal_data)
+    SFMATH_EXPORT void __stdcall RunPanTompkins(dataType *signal_data, int len_signal_data, int sample_freq)
     {
         int *r_bins = (int*)malloc(len_signal_data*sizeof (int));
-        init(signal_data, len_signal_data, r_bins);
+        init(signal_data, len_signal_data, r_bins, 250);
         panTompkins();
         //first element is end index
         for(int i = 0; i < len_signal_data; i++)

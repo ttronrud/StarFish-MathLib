@@ -37,7 +37,7 @@ void ECG2RPractice()
     }
     fclose(file); //close file
 
-    RunPanTompkins(ECGPractice.data(), alloc_size);
+    RunPanTompkins(ECGPractice.data(), alloc_size, 250);
 }
 
 //Shows an example of reading in a list of R-R intervals

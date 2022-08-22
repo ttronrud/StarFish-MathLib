@@ -8,7 +8,7 @@
 #include "PanTompkins.h"
 
 extern "C" {
-    SFMATH_EXPORT void __stdcall RunPanTompkins(dataType *signal_data, int len_signal_data);
+    SFMATH_EXPORT void __stdcall RunPanTompkins(dataType *signal_data, int len_signal_data, int sample_freq);
 };
 
 

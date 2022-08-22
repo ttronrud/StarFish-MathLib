@@ -150,16 +150,25 @@
  *-------------------------------------------------------------------------------*
  */
 
+/*
+ * Notes from Thor:
+ * The test ECG file is from the AHA database, with a moving 50 frame average
+ * subtracted out (to make things a bit easier on the PT system). AHA uses
+ * 250 Hz samples, so the #DEFINEs have been adjusted. Delay is zero because we're not streaming to/from a file,
+ * so the sample number is accurate.
+ * I've found that there is usually a double-detection within ~windowsize
+ */
+
 #include "PanTompkins.h"
 #include <stdio.h>      // Remove if not using the standard file functions.
 #include <cstring>
 #include <iostream>
 
-#define WINDOWSIZE 50   // Integrator window size, in samples. The article recommends 150ms. So, FS*0.15.
+//#define WINDOWSIZE 40   // Integrator window size, in samples. The article recommends 150ms. So, FS*0.15.
 // However, you should check empirically if the waveform looks ok.
 #define NOSAMPLE -32000 // An indicator that there are no more samples to read. Use an impossible value for a sample.
-#define FS 250          // Sampling frequency.
-#define BUFFSIZE 415    // The size of the buffers (in samples). Must fit more than 1.66 times an RR interval, which
+//#define FS 250          // Sampling frequency.
+#define BUFFSIZE 500    // The size of the buffers (in samples). Must fit more than 1.66 times an RR interval, which
 // typically could be around 1 second.
 
 #define DELAY 0		// Delay introduced by the filters. Filter only output samples after this one.
@@ -170,12 +179,17 @@ dataType *Input_Signal;
 int len_Input_Signal;
 int *Output_signal;
 int next_out = 0;
+int WINDOWSIZE = 40;
+int FS = 250;
+//int BUFFSIZE = 500;
 
-void init(dataType *inp, int l_inp, int *out)
+void init(dataType *inp, int l_inp, int *out, int sample_freq)
 {
     Input_Signal = inp;
     len_Input_Signal = l_inp;
     Output_signal = out;
+    WINDOWSIZE = (int)(sample_freq*0.15);
+    FS = sample_freq;
 }
 
 dataType input(unsigned long index)
