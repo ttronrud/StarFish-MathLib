@@ -12,5 +12,4 @@ extern "C" {
 };
 
 
-
 #endif //SFMATH_PANTOMPKINS_CAPI_H

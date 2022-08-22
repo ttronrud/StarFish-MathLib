@@ -37,7 +37,7 @@
 typedef int dataType;
 
 void panTompkins();
-void init(dataType *inp, int l_inp, bool sig_loop, long int *RBins, int len_RBins);
+void init(dataType *inp, int l_inp, int *out);
 
 
 #endif //SFMATH_PANTOMPKINS_H

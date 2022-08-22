@@ -25,7 +25,7 @@ void ECG2RPractice()
 {
     FILE *file;
     file = fopen("ECG.txt", "r");
-    int alloc_size = 5000;
+    int alloc_size = 3500;
     char buffer[16];
     std::vector<int> ECGPractice;
     ECGPractice.reserve(alloc_size);
@@ -37,7 +37,7 @@ void ECG2RPractice()
     }
     fclose(file); //close file
 
-    RunPanTompkins(ECGPractice.data(), 1000);
+    RunPanTompkins(ECGPractice.data(), alloc_size);
 }
 
 //Shows an example of reading in a list of R-R intervals

@@ -155,34 +155,27 @@
 #include <cstring>
 #include <iostream>
 
-#define WINDOWSIZE 200   // Integrator window size, in samples. The article recommends 150ms. So, FS*0.15.
+#define WINDOWSIZE 50   // Integrator window size, in samples. The article recommends 150ms. So, FS*0.15.
 // However, you should check empirically if the waveform looks ok.
 #define NOSAMPLE -32000 // An indicator that there are no more samples to read. Use an impossible value for a sample.
 #define FS 250          // Sampling frequency.
-#define BUFFSIZE 1000    // The size of the buffers (in samples). Must fit more than 1.66 times an RR interval, which
+#define BUFFSIZE 415    // The size of the buffers (in samples). Must fit more than 1.66 times an RR interval, which
 // typically could be around 1 second.
 
-#define DELAY 22		// Delay introduced by the filters. Filter only output samples after this one.
+#define DELAY 0		// Delay introduced by the filters. Filter only output samples after this one.
 // Set to 0 if you want to keep the delay. Fixing the delay results in DELAY less samples
 // in the final end result.
 
 dataType *Input_Signal;
 int len_Input_Signal;
-bool loop_signal = false;
-long int *rBinspt;
-int rbins_next;
-int len_rbins;
+int *Output_signal;
+int next_out = 0;
 
-void init(dataType *inp, int l_inp, bool sig_loop, long int *RBins, int len_RBins)
+void init(dataType *inp, int l_inp, int *out)
 {
     Input_Signal = inp;
     len_Input_Signal = l_inp;
-    loop_signal = sig_loop;
-    rBinspt = RBins;
-    rbins_next = 1;
-    len_rbins = len_RBins;
-    //initialize RBins as -1 (invalid) so we know the end of the list
-    memset(RBins,-1,len_RBins*sizeof(int));
+    Output_signal = out;
 }
 
 dataType input(unsigned long index)
@@ -192,17 +185,12 @@ dataType input(unsigned long index)
     {
         num = Input_Signal[index];
     }
-    else if(loop_signal) //Loop the signal if it's flagged
-    {
-        num = Input_Signal[index % len_Input_Signal];
-    }
     return num;
 }
 
-void output(int index)
+void output(int out)
 {
-    return;
-
+    Output_signal[next_out++] = out;
 }
 
 /*
@@ -223,8 +211,7 @@ void panTompkins()
     // rrmiss is the longest that it would be expected until a new QRS is detected. If none is detected for such
     // a long interval, the thresholds must be adjusted.
     int rr1[8], rr2[8], rravg1 = 0, rravg2 = 0, rrlow = 0, rrhigh = 0, rrmiss = 0;
-    rravg1 = 0;
-    rravg2 = 0;
+
     // i and j are iterators for loops.
     // sample counts how many samples have been read so far.
     // lastQRS stores which was the last sample read when the last R sample was triggered.
@@ -431,7 +418,8 @@ void panTompkins()
                 threshold_f2 = 0.5*threshold_f1;
                 qrs = false;
                 outputSignal[current] = qrs;
-
+                if (sample > DELAY + BUFFSIZE)
+                    output(outputSignal[0]);
                 continue;
             }
 
@@ -449,8 +437,6 @@ void panTompkins()
             }
             rr1[7] = sample - lastQRS;
             lastQRS = sample;
-            rBinspt[rbins_next++] = (long int)(sample-DELAY);
-            rBinspt[0] = (long int)(rbins_next-1); //first element is number
             rravg1 += rr1[7];
             rravg1 *= 0.125;
 
@@ -575,6 +561,8 @@ void panTompkins()
                 {
                     outputSignal[current] = false;
                     outputSignal[i] = true;
+                    if (sample > DELAY + BUFFSIZE)
+                        output(outputSignal[0]);
                     continue;
                 }
             }
@@ -604,6 +592,15 @@ void panTompkins()
         // for the current sample, we might miss a peak that could've been found later by backsearching using
         // lighter thresholds. The final waveform output does match the original signal, though.
         outputSignal[current] = qrs;
+        if (sample > DELAY + BUFFSIZE)
+            output(outputSignal[0]);
     } while (signal[current] != NOSAMPLE);
 
+    // Output the last remaining samples on the buffer
+    for (i = 1; i < BUFFSIZE; i++)
+        output(outputSignal[i]);
+
+    // These last two lines must be deleted if you are not working with files.
+    //fclose(fin);
+    //fclose(fout);
 }
