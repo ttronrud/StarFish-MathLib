@@ -177,6 +177,7 @@
 #define DELAY 22		// Delay introduced by the filters. Filter only output samples after this one.
 // Set to 0 if you want to keep the delay. Fixing the delay results in DELAY less samples
 // in the final end result.
+#define  MOVING_AVG_LEN 5
 
 dataType *Input_Signal;
 int len_Input_Signal;
@@ -185,29 +186,9 @@ int next_out = 0;
 int WINDOWSIZE = 40;
 int FS = 250;
 
-void init(dataType *inp, int l_inp, int *out, int sample_freq, int moving_avg_len)
+void init(dataType *inp, int l_inp, int *out, int sample_freq)
 {
     Input_Signal = inp;
-    dataType avg = 0;
-    //Basic, FW-friendly moving average
-    //For "normal" use cases, with larger sets, it's way better to do
-    //convolution with complex FFT multiplication
-    //but if you don't want to use FFT-tier memory, you can try with this
-    if(moving_avg_len > 0)
-    {
-        if(moving_avg_len%2 > 0)
-            --moving_avg_len;
-        for(int i = 0; i < l_inp - moving_avg_len; i++)
-        {
-            avg =0;
-            for(int j = 0; j < moving_avg_len; j++)
-            {
-                avg += Input_Signal[i+j];
-            }
-            avg /= moving_avg_len;
-            Input_Signal[i] -= avg;
-        }
-    }
     len_Input_Signal = l_inp;
     Output_signal = out;
     WINDOWSIZE = (int)(sample_freq*0.15);
@@ -240,7 +221,9 @@ void panTompkins()
     // filtering module: DC Block, low pass, high pass, integral etc.
     // The output is a buffer where we can change a previous result (using a back search) before outputting.
     dataType signal[BUFFSIZE], dcblock[BUFFSIZE], lowpass[BUFFSIZE], highpass[BUFFSIZE], derivative[BUFFSIZE], squared[BUFFSIZE], integral[BUFFSIZE], outputSignal[BUFFSIZE];
-
+    dataType last_avg[MOVING_AVG_LEN];
+    dataType avg = 0;
+    memset(last_avg,0,MOVING_AVG_LEN*sizeof(dataType));
     // rr1 holds the last 8 RR intervals. rr2 holds the last 8 RR intervals between rrlow and rrhigh.
     // rravg1 is the rr1 average, rr2 is the rravg2. rrlow = 0.92*rravg2, rrhigh = 1.08*rravg2 and rrmiss = 1.16*rravg2.
     // rrlow is the lowest RR-interval considered normal for the current heart beat, while rrhigh is the highest.
@@ -309,7 +292,23 @@ void panTompkins()
             current = sample;
         }
         signal[current] = input(sample);
+        //try an ultra-lightweight moving average
+        //set the latest value
+        last_avg[MOVING_AVG_LEN-1] = signal[current];
+        if(sample > MOVING_AVG_LEN && signal[current] != NOSAMPLE)
+        {
+            avg = 0;
+            for(int q = 0; q < MOVING_AVG_LEN; q++)
+            {
+                avg += last_avg[q]/MOVING_AVG_LEN;
+                if(q < MOVING_AVG_LEN-1)
+                {
+                    last_avg[q] = last_avg[q+1]; //shift average buffer down one for next iteration
+                }
+            }
+            signal[current] -= avg;
 
+        }
         // If no sample was read, stop processing!
         if (signal[current] == NOSAMPLE)
             break;
