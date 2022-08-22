@@ -25,7 +25,7 @@ void ECG2RPractice()
 {
     FILE *file;
     file = fopen("ECG.txt", "r");
-    int alloc_size = 3500;
+    int alloc_size = 10000;
     char buffer[16];
     std::vector<int> ECGPractice;
     ECGPractice.reserve(alloc_size);

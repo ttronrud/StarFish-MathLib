@@ -156,7 +156,10 @@
  * subtracted out (to make things a bit easier on the PT system). AHA uses
  * 250 Hz samples, so the #DEFINEs have been adjusted. Delay is zero because we're not streaming to/from a file,
  * so the sample number is accurate.
- * I've found that there is usually a double-detection within ~windowsize
+ * I've found that if there's a relatively large amount of high-amplitude non-R noise (like in the AHA db),
+ * that we'll get double-detections. Moving window smoothing with a window size of ~1/10th sample rate seems to work ok
+ * The first 1-2 seconds of samples will likely have completely wrong R detections, so it should be scrubbed.
+ * During this period, the filters "learn" how to handle the signal, and do a better job after.
  */
 
 #include "PanTompkins.h"
@@ -168,10 +171,10 @@
 // However, you should check empirically if the waveform looks ok.
 #define NOSAMPLE -32000 // An indicator that there are no more samples to read. Use an impossible value for a sample.
 //#define FS 250          // Sampling frequency.
-#define BUFFSIZE 500    // The size of the buffers (in samples). Must fit more than 1.66 times an RR interval, which
+#define BUFFSIZE 1000    // The size of the buffers (in samples). Must fit more than 1.66 times an RR interval, which
 // typically could be around 1 second.
 
-#define DELAY 0		// Delay introduced by the filters. Filter only output samples after this one.
+#define DELAY 22		// Delay introduced by the filters. Filter only output samples after this one.
 // Set to 0 if you want to keep the delay. Fixing the delay results in DELAY less samples
 // in the final end result.
 
@@ -181,11 +184,30 @@ int *Output_signal;
 int next_out = 0;
 int WINDOWSIZE = 40;
 int FS = 250;
-//int BUFFSIZE = 500;
 
-void init(dataType *inp, int l_inp, int *out, int sample_freq)
+void init(dataType *inp, int l_inp, int *out, int sample_freq, int moving_avg_len)
 {
     Input_Signal = inp;
+    dataType avg = 0;
+    //Basic, FW-friendly moving average
+    //For "normal" use cases, with larger sets, it's way better to do
+    //convolution with complex FFT multiplication
+    //but if you don't want to use FFT-tier memory, you can try with this
+    if(moving_avg_len > 0)
+    {
+        if(moving_avg_len%2 > 0)
+            --moving_avg_len;
+        for(int i = 0; i < l_inp - moving_avg_len; i++)
+        {
+            avg =0;
+            for(int j = 0; j < moving_avg_len; j++)
+            {
+                avg += Input_Signal[i+j];
+            }
+            avg /= moving_avg_len;
+            Input_Signal[i] -= avg;
+        }
+    }
     len_Input_Signal = l_inp;
     Output_signal = out;
     WINDOWSIZE = (int)(sample_freq*0.15);
