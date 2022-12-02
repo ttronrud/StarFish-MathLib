@@ -32,7 +32,7 @@ void ECG2RPractice()
 
     PanTompkinsInit();
     int q = 0;
-    while(fgets(buffer,16,file)!=NULL && ECGPractice.size() < alloc_size)
+    while(fgets(buffer,16,file)!=NULL)// && ECGPractice.size() < alloc_size)
     {
         double tmp = std::atof(buffer);
         //std::cout << tmp << std::endl;
