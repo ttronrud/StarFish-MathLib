@@ -27,7 +27,10 @@ extern "C"
     //Other methods
     __declspec(dllimport) void __stdcall FFT_PSD(double *data, unsigned int data_len, bool use_hanning, double *out_data, int*out_data_len);
     __declspec(dllimport) void __stdcall SFMath_Hello();
-    __declspec(dllimport) void __stdcall RunPanTompkins(int *signal_data, int len_signal_data, int sample_freq);
+    __declspec(dllimport) void __stdcall RunPanTompkins(double *signal_data, int len_signal_data);
+    __declspec(dllimport) bool __stdcall PanTompkins_SingleStep(double signal_datum);
+    __declspec(dllimport) void __stdcall PanTompkinsInit();
+
 };
 
 //Test functions

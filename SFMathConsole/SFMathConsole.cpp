@@ -27,17 +27,25 @@ void ECG2RPractice()
     file = fopen("ECG.txt", "r");
     int alloc_size = 10000;
     char buffer[16];
-    std::vector<int> ECGPractice;
-    ECGPractice.reserve(alloc_size);
+    //std::vector<double> ECGPractice;
+    //ECGPractice.reserve(alloc_size);
+
+    PanTompkinsInit();
+    int q = 0;
     while(fgets(buffer,16,file)!=NULL && ECGPractice.size() < alloc_size)
     {
-        int tmp = std::atoi(buffer);
+        double tmp = std::atof(buffer);
         //std::cout << tmp << std::endl;
-        ECGPractice.push_back(tmp);
+        //ECGPractice.push_back(tmp);
+        if(PanTompkins_SingleStep((tmp)))
+        {
+            printf("%d\n",q);
+        }
+        ++q;
     }
     fclose(file); //close file
 
-    RunPanTompkins(ECGPractice.data(), alloc_size, 250);
+    //RunPanTompkins(ECGPractice.data(), alloc_size);
 }
 
 //Shows an example of reading in a list of R-R intervals

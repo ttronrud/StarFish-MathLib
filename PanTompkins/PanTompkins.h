@@ -33,11 +33,38 @@
 #ifndef SFMATH_PANTOMPKINS_H
 #define SFMATH_PANTOMPKINS_H
 
+#define NOSAMPLE -32000 // An indicator that there are no more samples to read. Use an impossible value for a sample.
+//#define FS 250          // Sampling frequency.
+#define BUFFSIZE 415    // The size of the buffers (in samples). Must fit more than 1.66 times an RR interval, which
+// typically could be around 1 second.
 
-typedef int dataType;
+#define  MOVING_AVG_LEN 5
 
-void panTompkins();
-void init(dataType *inp, int l_inp, int *out, int sample_freq);
+#define WINDOWSIZE 40
+
+#define FS 250
+
+class PanTompkins
+{
+
+    static int sample;
+    static double signal[BUFFSIZE], dcblock[BUFFSIZE], lowpass[BUFFSIZE], highpass[BUFFSIZE], derivative[BUFFSIZE], squared[BUFFSIZE], integral[BUFFSIZE], outputSignal[BUFFSIZE];
+    static int rr1[8], rr2[8], rravg1, rravg2, rrlow, rrhigh, rrmiss;
+    static double peak_i, peak_f, threshold_i1, threshold_i2, threshold_f1, threshold_f2, spk_i, spk_f, npk_i, npk_f;
+    static int i, j, lastQRS;
+    static double lastSlope, currentSlope;
+    static int current;
+    static double last_avg[MOVING_AVG_LEN];
+    static double avg;
+    static bool qrs, regular, prevRegular;
+
+public:
+    static int DELAY;
+    static void PanTompkins_init();
+    static bool PanTompkins_SingleStep(double inputSample);
+};
+
+
 
 
 #endif //SFMATH_PANTOMPKINS_H
